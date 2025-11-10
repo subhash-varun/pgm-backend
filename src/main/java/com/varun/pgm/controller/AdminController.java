@@ -4,8 +4,10 @@ import com.varun.pgm.annotation.RequirePermission;
 import com.varun.pgm.dto.request.AdminRequest;
 import com.varun.pgm.dto.response.AdminResponse;
 import com.varun.pgm.dto.response.ApiResponse;
+import com.varun.pgm.dto.response.DashboardSummaryResponse;
 import com.varun.pgm.entity.Admin;
 import com.varun.pgm.service.AdminService;
+import com.varun.pgm.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,13 +19,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/admin/admins")
-@Tag(name = "Admins", description = "Admin management endpoints")
+@RequestMapping("/api/admin")
+@Tag(name = "Admin", description = "Admin management and dashboard endpoints")
 @SecurityRequirement(name = "bearer-key")
 public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private DashboardService dashboardService;
 
     @PostMapping
     @Operation(summary = "Create a new admin")
@@ -104,5 +109,13 @@ public class AdminController {
     public ResponseEntity<ApiResponse<Void>> deleteAdmin(@PathVariable Long id) {
         adminService.deleteAdmin(id);
         return ResponseEntity.ok(new ApiResponse<>("success", "Admin deleted successfully", null));
+    }
+
+    @GetMapping("/dashboard/summary")
+    @Operation(summary = "Get admin dashboard summary")
+    @RequirePermission("dashboard:view")
+    public ResponseEntity<ApiResponse<DashboardSummaryResponse>> getDashboardSummary() {
+        DashboardSummaryResponse summary = dashboardService.getDashboardSummary();
+        return ResponseEntity.ok(new ApiResponse<>("success", "Dashboard summary retrieved successfully", summary));
     }
 }

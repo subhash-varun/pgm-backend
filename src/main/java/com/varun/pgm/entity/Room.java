@@ -44,6 +44,9 @@ public class Room {
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Inventory> inventories;
 
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Maintenance> maintenanceRequests;
+
     public enum RoomType {
         SINGLE, DOUBLE, SHARED
     }

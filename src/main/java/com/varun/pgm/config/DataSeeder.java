@@ -77,6 +77,9 @@ public class DataSeeder implements CommandLineRunner {
                 createPermission("ADMIN_UPDATE", "Update Admin", "Permission to update admin users"),
                 createPermission("ADMIN_DELETE", "Delete Admin", "Permission to delete admin users"),
 
+                // Dashboard permissions
+                createPermission("DASHBOARD_VIEW", "View Dashboard", "Permission to view admin dashboard"),
+
                 // Staff permissions
                 createPermission("STAFF_CREATE", "Create Staff", "Permission to create new staff members"),
                 createPermission("STAFF_READ", "Read Staff", "Permission to view staff members"),
