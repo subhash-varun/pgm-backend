@@ -12,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -24,11 +23,14 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearer-key")
 public class AdminController {
 
-    @Autowired
-    private AdminService adminService;
+    private final AdminService adminService;
 
-    @Autowired
-    private DashboardService dashboardService;
+    private final DashboardService dashboardService;
+
+    public AdminController(AdminService adminService, DashboardService dashboardService) {
+        this.adminService = adminService;
+        this.dashboardService = dashboardService;
+    }
 
     @PostMapping
     @Operation(summary = "Create a new admin")
@@ -113,7 +115,7 @@ public class AdminController {
 
     @GetMapping("/dashboard/summary")
     @Operation(summary = "Get admin dashboard summary")
-    @RequirePermission("dashboard:view")
+    @RequirePermission("DASHBOARD_VIEW")
     public ResponseEntity<ApiResponse<DashboardSummaryResponse>> getDashboardSummary() {
         DashboardSummaryResponse summary = dashboardService.getDashboardSummary();
         return ResponseEntity.ok(new ApiResponse<>("success", "Dashboard summary retrieved successfully", summary));

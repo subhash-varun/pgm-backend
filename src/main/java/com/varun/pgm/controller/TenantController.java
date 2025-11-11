@@ -6,6 +6,7 @@ import com.varun.pgm.dto.response.ApiResponse;
 import com.varun.pgm.dto.response.TenantResponse;
 import com.varun.pgm.entity.Room;
 import com.varun.pgm.entity.Tenant;
+import com.varun.pgm.repository.RoomRepository;
 import com.varun.pgm.service.TenantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,15 +29,18 @@ public class TenantController {
     @Autowired
     private TenantService tenantService;
 
+    @Autowired
+    private RoomRepository roomRepository;
+
     @PostMapping
     @Operation(summary = "Create a new tenant")
     @RequirePermission("TENANT_CREATE")
     public ResponseEntity<ApiResponse<TenantResponse>> createTenant(@Valid @RequestBody TenantRequest request) {
         Tenant tenant = new Tenant();
         // Set room relationship
-        if (request.getRoomId() != null) {
-            Room room = new Room();
-            room.setId(request.getRoomId());
+        if (request.getRoomNumber() != null) {
+            Room room = roomRepository.findByRoomNumber(request.getRoomNumber())
+                    .orElseThrow(() -> new RuntimeException("Room not found"));
             tenant.setRoom(room);
         }
         tenant.setName(request.getName());
@@ -179,9 +183,9 @@ public class TenantController {
     public ResponseEntity<ApiResponse<TenantResponse>> updateTenant(@PathVariable Long id, @Valid @RequestBody TenantRequest request) {
         Tenant tenantDetails = new Tenant();
         // Set room relationship
-        if (request.getRoomId() != null) {
-            Room room = new Room();
-            room.setId(request.getRoomId());
+        if (request.getRoomNumber() != null) {
+            Room room = roomRepository.findByRoomNumber(request.getRoomNumber())
+                    .orElseThrow(() -> new RuntimeException("Room not found"));
             tenantDetails.setRoom(room);
         }
         tenantDetails.setName(request.getName());

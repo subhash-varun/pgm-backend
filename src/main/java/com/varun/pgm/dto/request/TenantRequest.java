@@ -17,8 +17,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class TenantRequest {
 
-    @NotNull(message = "Room ID is required")
-    private Long roomId;
+    @NotNull(message = "Room number is required")
+    private String roomNumber;
 
     @NotBlank(message = "Name is required")
     @Size(max = 100, message = "Name must be less than 100 characters")
