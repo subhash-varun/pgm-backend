@@ -6,8 +6,12 @@ import com.varun.pgm.dto.request.UpdateProfileRequest;
 import com.varun.pgm.dto.response.AdminProfileResponse;
 import com.varun.pgm.dto.response.LoginResponse;
 import com.varun.pgm.entity.Admin;
+import com.varun.pgm.entity.Staff;
+import com.varun.pgm.entity.Tenant;
 import com.varun.pgm.entity.UserRole;
 import com.varun.pgm.repository.AdminRepository;
+import com.varun.pgm.repository.StaffRepository;
+import com.varun.pgm.repository.TenantRepository;
 import com.varun.pgm.repository.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +30,12 @@ public class AuthService {
     private AdminRepository adminRepository;
 
     @Autowired
+    private StaffRepository staffRepository;
+
+    @Autowired
+    private TenantRepository tenantRepository;
+
+    @Autowired
     private UserRoleRepository userRoleRepository;
 
     @Autowired
@@ -42,9 +52,25 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        Admin admin = adminRepository.findByEmail(request.getEmail()).orElseThrow();
+        // Try to find user as Admin first
+        Admin admin = adminRepository.findByEmail(request.getEmail()).orElse(null);
+        if (admin != null) {
+            return new LoginResponse(jwtUtil.generateToken(admin.getEmail()), 86400000L); // expires in 24 hours
+        }
 
-        return new LoginResponse(jwtUtil.generateToken(admin.getEmail()), 86400000L); // expires in 24 hours
+        // Try to find user as Staff
+        Staff staff = staffRepository.findByEmail(request.getEmail()).orElse(null);
+        if (staff != null) {
+            return new LoginResponse(jwtUtil.generateToken(staff.getEmail()), 86400000L); // expires in 24 hours
+        }
+
+        // Try to find user as Tenant
+        Tenant tenant = tenantRepository.findByEmail(request.getEmail()).orElse(null);
+        if (tenant != null) {
+            return new LoginResponse(jwtUtil.generateToken(tenant.getEmail()), 86400000L); // expires in 24 hours
+        }
+
+        throw new RuntimeException("User not found");
     }
 
     public Admin register(RegisterRequest request) {
@@ -64,16 +90,50 @@ public class AuthService {
 
     public AdminProfileResponse getProfile() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        Admin admin = adminRepository.findByEmail(email).orElseThrow();
-        List<String> roles = getUserRoles(admin.getId(), UserRole.UserType.ADMIN);
-        return new AdminProfileResponse(
-                admin.getId(),
-                admin.getName(),
-                admin.getEmail(),
-                admin.getContactNo(),
-                admin.getCreatedAt(),
-                roles
-        );
+
+        // Try to find user as Admin first
+        Admin admin = adminRepository.findByEmail(email).orElse(null);
+        if (admin != null) {
+            List<String> roles = getUserRoles(admin.getId(), UserRole.UserType.ADMIN);
+            return new AdminProfileResponse(
+                    admin.getId(),
+                    admin.getName(),
+                    admin.getEmail(),
+                    admin.getContactNo(),
+                    admin.getCreatedAt(),
+                    roles
+            );
+        }
+
+        // Try to find user as Staff
+        Staff staff = staffRepository.findByEmail(email).orElse(null);
+        if (staff != null) {
+            List<String> roles = getUserRoles(staff.getId(), UserRole.UserType.STAFF);
+            return new AdminProfileResponse(
+                    staff.getId(),
+                    staff.getName(),
+                    staff.getEmail(),
+                    null, // Staff doesn't have contactNo field
+                    staff.getCreatedAt(),
+                    roles
+            );
+        }
+
+        // Try to find user as Tenant
+        Tenant tenant = tenantRepository.findByEmail(email).orElse(null);
+        if (tenant != null) {
+            List<String> roles = getUserRoles(tenant.getId(), UserRole.UserType.TENANT);
+            return new AdminProfileResponse(
+                    tenant.getId(),
+                    tenant.getName(),
+                    tenant.getEmail(),
+                    tenant.getPhone(), // Use phone as contact
+                    tenant.getCreatedAt(),
+                    roles
+            );
+        }
+
+        throw new RuntimeException("User not found with email: " + email);
     }
 
     public AdminProfileResponse updateProfile(UpdateProfileRequest request) {

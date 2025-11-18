@@ -28,6 +28,6 @@ public class UserRole {
     private LocalDateTime assignedAt;
 
     public enum UserType {
-        ADMIN, STAFF
+        ADMIN, STAFF, TENANT
     }
 }

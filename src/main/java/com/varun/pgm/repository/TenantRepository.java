@@ -8,9 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TenantRepository extends JpaRepository<Tenant, Long> {
+    Optional<Tenant> findByEmail(String email);
     List<Tenant> findByRoomId(Long roomId);
 
     long countByStatus(Tenant.TenantStatus status);

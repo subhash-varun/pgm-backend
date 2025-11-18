@@ -3,6 +3,7 @@ package com.varun.pgm.config;
 import com.varun.pgm.entity.*;
 import com.varun.pgm.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,9 @@ import org.slf4j.LoggerFactory;
 public class DataSeeder implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataSeeder.class);
+
+    @Value("${app.data.seeding.enabled:true}")
+    private boolean dataSeedingEnabled;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -51,11 +55,17 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        if (!dataSeedingEnabled) {
+            logger.info("Data seeding is disabled. Skipping...");
+            return;
+        }
+
         logger.info("Starting data seeding process...");
         try {
             seedRolesAndPermissions();
             seedAdminUser();
             seedStaffUsers();
+            seedTenantUsers();
             seedRooms();
             seedTenants();
             seedInventory();
@@ -108,7 +118,12 @@ public class DataSeeder implements CommandLineRunner {
                 createPermission("INVENTORY_CREATE", "Create Inventory", "Permission to create inventory items"),
                 createPermission("INVENTORY_READ", "Read Inventory", "Permission to view inventory items"),
                 createPermission("INVENTORY_UPDATE", "Update Inventory", "Permission to update inventory items"),
-                createPermission("INVENTORY_DELETE", "Delete Inventory", "Permission to delete inventory items")
+                createPermission("INVENTORY_DELETE", "Delete Inventory", "Permission to delete inventory items"),
+
+
+                // Notification permissions
+                createPermission("NOTIFICATION_CREATE", "Create Notification", "Permission to create and send notifications"),
+                createPermission("NOTIFICATION_READ", "Read Notification", "Permission to view and manage notifications")
             );
 
             permissionRepository.saveAll(permissions);
@@ -141,18 +156,26 @@ public class DataSeeder implements CommandLineRunner {
             List<Permission> staffPermissions = allPermissions.stream()
                 .filter(p -> p.getKey().startsWith("ROOM_READ") ||
                            p.getKey().startsWith("TENANT_READ") ||
-                           p.getKey().startsWith("PAYMENT_READ") ||
-                           p.getKey().startsWith("INVENTORY_READ"))
+                           p.getKey().startsWith("PAYMENT_READ") || 
+                           p.getKey().startsWith("INVENTORY_READ")|| 
+                           p.getKey().startsWith("NOTIFICATION_READ"))
                 .toList();
             Role staffRole = createRole("Staff", "Basic staff access", false, staffPermissions);
 
-            roleRepository.saveAll(Arrays.asList(superAdminRole, adminRole, managerRole, staffRole));
-            System.out.println("✅ Created 4 roles with assigned permissions");
+            // Tenant gets very limited permissions (only their own data)
+            List<Permission> tenantPermissions = allPermissions.stream()
+                .filter(p -> p.getKey().startsWith("PAYMENT_READ") ||
+                           p.getKey().equals("NOTIFICATION_READ"))
+                .toList();
+            Role tenantRole = createRole("Tenant", "Tenant access to their own data", false, tenantPermissions);
+
+            roleRepository.saveAll(Arrays.asList(superAdminRole, adminRole, managerRole, staffRole, tenantRole));
+            System.out.println("✅ Created 5 roles with assigned permissions");
         }
     }
 
     private void seedAdminUser() {
-        if (adminRepository.count() == 0) {
+        if (adminRepository.findByEmail("admin@pgm.com").isEmpty()) {
             Admin admin = new Admin();
             admin.setName("Super Admin");
             admin.setEmail("admin@pgm.com");
@@ -175,11 +198,13 @@ public class DataSeeder implements CommandLineRunner {
 
             userRoleRepository.save(userRole);
             System.out.println("✅ Created default admin user: admin@pgm.com / admin123");
+        } else {
+            System.out.println("ℹ️  Admin user already exists, skipping creation");
         }
     }
 
     private void seedStaffUsers() {
-        if (staffRepository.count() == 0) {
+        if (staffRepository.findByEmail("rajesh@pgm.com").isEmpty()) {
             Admin admin = adminRepository.findByEmail("admin@pgm.com")
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
@@ -196,6 +221,55 @@ public class DataSeeder implements CommandLineRunner {
 
             staffRepository.saveAll(staffList);
             System.out.println("✅ Created " + staffList.size() + " staff members");
+        } else {
+            System.out.println("ℹ️  Staff users already exist, skipping creation");
+        }
+    }
+
+    private void seedTenantUsers() {
+        // Create user accounts for existing tenants so they can receive notifications
+        if (tenantRepository.count() > 0) {
+            List<Tenant> tenants = tenantRepository.findAll();
+            Role tenantRole = roleRepository.findByName("Tenant")
+                .orElseThrow(() -> new RuntimeException("Tenant role not found"));
+
+            // Check if tenant user roles already exist
+            List<UserRole> existingTenantRoles = userRoleRepository.findById_RoleId(tenantRole.getId());
+            if (existingTenantRoles.isEmpty()) {
+                for (Tenant tenant : tenants) {
+                    // Create a user account for each tenant
+                    createTenantUser(tenant, tenantRole);
+                }
+                System.out.println("✅ Created " + tenants.size() + " tenant user accounts");
+            } else {
+                System.out.println("ℹ️  Tenant users already exist, skipping creation");
+            }
+        }
+    }
+
+    private void createTenantUser(Tenant tenant, Role tenantRole) {
+        // For demo purposes, create a simple user account for the tenant
+        // In production, this would be handled during tenant registration
+
+        // Note: We don't have a separate TenantUser entity, so we'll use the tenant's email
+        // as a way to identify them. In a real app, you'd have a User entity that tenants can log in with.
+
+        // For now, we'll just assign the tenant role to a dummy user ID
+        // This is a simplified approach for demo purposes
+
+        // Actually, let's create a simple approach - we'll assign the tenant role to the tenant's ID
+        // treating the tenant as if they have a user account
+        try {
+            UserRoleId userRoleId = new UserRoleId(tenant.getId(), tenantRole.getId());
+            UserRole userRole = new UserRole();
+            userRole.setId(userRoleId);
+            userRole.setUserType(UserRole.UserType.TENANT);
+            userRole.setRole(tenantRole);
+            userRole.setAssignedAt(LocalDateTime.now());
+
+            userRoleRepository.save(userRole);
+        } catch (Exception e) {
+            logger.warn("Could not create user role for tenant {}: {}", tenant.getEmail(), e.getMessage());
         }
     }
 
@@ -238,6 +312,8 @@ public class DataSeeder implements CommandLineRunner {
 
             roomRepository.saveAll(rooms);
             System.out.println("✅ Created " + rooms.size() + " rooms");
+        } else {
+            System.out.println("ℹ️  Rooms already exist, skipping creation");
         }
     }
 
@@ -283,6 +359,8 @@ public class DataSeeder implements CommandLineRunner {
                 }
 
                 System.out.println("✅ Created " + tenants.size() + " tenants and updated room statuses");
+            } else {
+                System.out.println("ℹ️  Tenants already exist, skipping creation");
             }
         }
     }
@@ -325,6 +403,8 @@ public class DataSeeder implements CommandLineRunner {
 
             inventoryRepository.saveAll(inventoryItems);
             System.out.println("✅ Created " + inventoryItems.size() + " inventory items");
+        } else {
+            System.out.println("ℹ️  Inventory items already exist, skipping creation");
         }
     }
 
@@ -356,6 +436,8 @@ public class DataSeeder implements CommandLineRunner {
 
                 paymentRepository.saveAll(payments);
                 System.out.println("✅ Created " + payments.size() + " payment records");
+            } else {
+                System.out.println("ℹ️  Payment records already exist, skipping creation");
             }
         }
     }
