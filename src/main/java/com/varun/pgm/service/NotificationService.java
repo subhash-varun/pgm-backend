@@ -138,7 +138,7 @@ public class NotificationService {
 
         // Send real-time notifications to role topic and individual users
         NotificationResponse roleNotificationResponse = new NotificationResponse(
-            null, // id
+            savedNotifications.get(0).getId(), // id of first notification
             request.getTitle(),
             request.getBody(),
             request.getType(),
@@ -163,8 +163,8 @@ public class NotificationService {
             updateUnreadCount(notification.getTargetUserId());
         }
 
-        // Return the first notification as response (they all have the same content)
-        return convertToResponse(savedNotifications.get(0));
+        // Return the role notification response (shows targetRole)
+        return roleNotificationResponse;
     }
 
     /**

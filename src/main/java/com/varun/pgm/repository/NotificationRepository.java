@@ -4,6 +4,7 @@ import com.varun.pgm.entity.Notification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -51,6 +52,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     List<Notification> findByCreatedAtAfter(LocalDateTime createdAt);
 
     // Mark all notifications as read for a user (direct + role-based)
+    @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.isRead = false AND " +
            "(n.targetUserId = :userId OR " +
            "(n.targetRole IS NOT NULL AND n.targetRole IN " +
