@@ -1,5 +1,6 @@
 package com.varun.pgm.controller;
 
+import com.varun.pgm.annotation.RequirePermission;
 import com.varun.pgm.dto.request.AssignPermissionsRequest;
 import com.varun.pgm.dto.request.CreateRoleRequest;
 import com.varun.pgm.dto.request.UpdateRoleRequest;
@@ -26,6 +27,7 @@ public class RoleController {
 
     @PostMapping
     @Operation(summary = "Create a new role")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<RoleResponse>> createRole(@Valid @RequestBody CreateRoleRequest request) {
         RoleResponse response = roleService.createRole(request);
         return ResponseEntity.ok(new ApiResponse<>("success", "Role created successfully", response));
@@ -33,6 +35,7 @@ public class RoleController {
 
     @GetMapping
     @Operation(summary = "Get all roles with pagination")
+    @RequirePermission("ADMIN_READ")
     public ResponseEntity<ApiResponse<Page<RoleResponse>>> getAllRoles(Pageable pageable) {
         Page<RoleResponse> response = roleService.getAllRoles(pageable);
         return ResponseEntity.ok(new ApiResponse<>("success", "Roles retrieved successfully", response));
@@ -40,6 +43,7 @@ public class RoleController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get role by ID")
+    @RequirePermission("ADMIN_READ")
     public ResponseEntity<ApiResponse<RoleResponse>> getRoleById(@PathVariable Long id) {
         RoleResponse response = roleService.getRoleById(id);
         return ResponseEntity.ok(new ApiResponse<>("success", "Role retrieved successfully", response));
@@ -47,6 +51,7 @@ public class RoleController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update role")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<RoleResponse>> updateRole(@PathVariable Long id, @Valid @RequestBody UpdateRoleRequest request) {
         RoleResponse response = roleService.updateRole(id, request);
         return ResponseEntity.ok(new ApiResponse<>("success", "Role updated successfully", response));
@@ -54,6 +59,7 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete role")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<Void>> deleteRole(@PathVariable Long id) {
         roleService.deleteRole(id);
         return ResponseEntity.ok(new ApiResponse<>("success", "Role deleted successfully", null));
@@ -61,6 +67,7 @@ public class RoleController {
 
     @PostMapping("/{roleId}/permissions")
     @Operation(summary = "Assign permissions to role")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<Void>> assignPermissions(@PathVariable Long roleId, @Valid @RequestBody AssignPermissionsRequest request) {
         roleService.assignPermissionsToRole(roleId, request);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permissions assigned successfully", null));
@@ -68,6 +75,7 @@ public class RoleController {
 
     @GetMapping("/{roleId}/permissions")
     @Operation(summary = "Get permissions for role")
+    @RequirePermission("ADMIN_READ")
     public ResponseEntity<ApiResponse<RolePermissionsResponse>> getRolePermissions(@PathVariable Long roleId) {
         RolePermissionsResponse response = roleService.getRolePermissions(roleId);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permissions retrieved successfully", response));
@@ -75,6 +83,7 @@ public class RoleController {
 
     @DeleteMapping("/{roleId}/permissions/{permissionId}")
     @Operation(summary = "Remove permission from role")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<Void>> removePermission(@PathVariable Long roleId, @PathVariable Long permissionId) {
         roleService.removePermissionFromRole(roleId, permissionId);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permission removed successfully", null));

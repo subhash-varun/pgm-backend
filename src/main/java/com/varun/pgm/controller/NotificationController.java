@@ -38,7 +38,7 @@ public class NotificationController {
     private final StaffRepository staffRepository;
 
     @PostMapping("/send")
-    // @RequirePermission("NOTIFICATION_CREATE") // Temporarily disabled for testing
+    @RequirePermission("NOTIFICATION_CREATE")
     @Operation(summary = "Send a notification", description = "Send a notification to specified targets")
     public ResponseEntity<ApiResponse<NotificationResponse>> sendNotification(
             @Valid @RequestBody NotificationSendRequest request) {
@@ -125,6 +125,7 @@ public class NotificationController {
     }
 
     @GetMapping("/debug-permissions")
+    @RequirePermission("ADMIN_READ")
     @Operation(summary = "Debug user permissions", description = "Check current user's permissions")
     public ResponseEntity<ApiResponse<List<String>>> debugPermissions() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

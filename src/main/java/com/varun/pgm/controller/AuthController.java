@@ -1,5 +1,6 @@
 package com.varun.pgm.controller;
 
+import com.varun.pgm.annotation.RequirePermission;
 import com.varun.pgm.dto.request.LoginRequest;
 import com.varun.pgm.dto.request.RegisterRequest;
 import com.varun.pgm.dto.request.UpdateProfileRequest;
@@ -38,6 +39,7 @@ public class AuthController {
 
     @GetMapping("/profile")
     @Operation(summary = "Get current admin profile")
+    // @RequirePermission("ADMIN_READ")
     public ResponseEntity<ApiResponse<AdminProfileResponse>> getProfile() {
         AdminProfileResponse response = authService.getProfile();
         return ResponseEntity.ok(new ApiResponse<>("success", "Profile retrieved successfully", response));
@@ -45,6 +47,7 @@ public class AuthController {
 
     @PutMapping("/profile")
     @Operation(summary = "Update current admin profile")
+    // @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<AdminProfileResponse>> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
         AdminProfileResponse response = authService.updateProfile(request);
         return ResponseEntity.ok(new ApiResponse<>("success", "Profile updated successfully", response));

@@ -1,5 +1,6 @@
 package com.varun.pgm.controller;
 
+import com.varun.pgm.annotation.RequirePermission;
 import com.varun.pgm.dto.request.CreatePermissionRequest;
 import com.varun.pgm.dto.request.UpdatePermissionRequest;
 import com.varun.pgm.dto.response.ApiResponse;
@@ -24,6 +25,7 @@ public class PermissionController {
 
     @PostMapping
     @Operation(summary = "Create a new permission")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<PermissionResponse>> createPermission(@Valid @RequestBody CreatePermissionRequest request) {
         PermissionResponse response = permissionService.createPermission(request);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permission created successfully", response));
@@ -31,6 +33,7 @@ public class PermissionController {
 
     @GetMapping
     @Operation(summary = "Get all permissions with pagination")
+    @RequirePermission("ADMIN_READ")
     public ResponseEntity<ApiResponse<Page<PermissionResponse>>> getAllPermissions(Pageable pageable) {
         Page<PermissionResponse> response = permissionService.getAllPermissions(pageable);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permissions retrieved successfully", response));
@@ -38,6 +41,7 @@ public class PermissionController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Get permission by ID")
+    @RequirePermission("ADMIN_READ")
     public ResponseEntity<ApiResponse<PermissionResponse>> getPermissionById(@PathVariable Long id) {
         PermissionResponse response = permissionService.getPermissionById(id);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permission retrieved successfully", response));
@@ -45,6 +49,7 @@ public class PermissionController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Update permission")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<PermissionResponse>> updatePermission(@PathVariable Long id, @Valid @RequestBody UpdatePermissionRequest request) {
         PermissionResponse response = permissionService.updatePermission(id, request);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permission updated successfully", response));
@@ -52,6 +57,7 @@ public class PermissionController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete permission")
+    @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<Void>> deletePermission(@PathVariable Long id) {
         permissionService.deletePermission(id);
         return ResponseEntity.ok(new ApiResponse<>("success", "Permission deleted successfully", null));

@@ -134,13 +134,13 @@ public class DataSeeder implements CommandLineRunner {
         if (roleRepository.count() == 0) {
             List<Permission> allPermissions = permissionRepository.findAll();
 
-            Role superAdminRole = createRole("Super Admin", "Full system access", true, allPermissions);
+            Role superAdminRole = createRole("SUPER_ADMIN", "Full system access", true, allPermissions);
 
             // Admin gets most permissions except some sensitive ones
             List<Permission> adminPermissions = allPermissions.stream()
                 .filter(p -> !p.getKey().equals("ADMIN_DELETE"))
                 .toList();
-            Role adminRole = createRole("Admin", "Administrative access", false, adminPermissions);
+            Role adminRole = createRole("ADMIN", "Administrative access", false, adminPermissions);
 
             // Manager gets operational permissions
             List<Permission> managerPermissions = allPermissions.stream()
@@ -150,7 +150,7 @@ public class DataSeeder implements CommandLineRunner {
                            p.getKey().startsWith("INVENTORY_") ||
                            p.getKey().startsWith("STAFF_READ"))
                 .toList();
-            Role managerRole = createRole("Manager", "Management access", false, managerPermissions);
+            Role managerRole = createRole("MANAGER", "Management access", false, managerPermissions);
 
             // Staff gets limited permissions
             List<Permission> staffPermissions = allPermissions.stream()
@@ -160,14 +160,14 @@ public class DataSeeder implements CommandLineRunner {
                            p.getKey().startsWith("INVENTORY_READ")|| 
                            p.getKey().startsWith("NOTIFICATION_READ"))
                 .toList();
-            Role staffRole = createRole("Staff", "Basic staff access", false, staffPermissions);
+            Role staffRole = createRole("STAFF", "Basic staff access", false, staffPermissions);
 
             // Tenant gets very limited permissions (only their own data)
             List<Permission> tenantPermissions = allPermissions.stream()
                 .filter(p -> p.getKey().startsWith("PAYMENT_READ") ||
                            p.getKey().equals("NOTIFICATION_READ"))
                 .toList();
-            Role tenantRole = createRole("Tenant", "Tenant access to their own data", false, tenantPermissions);
+            Role tenantRole = createRole("TENANT", "Tenant access to their own data", false, tenantPermissions);
 
             roleRepository.saveAll(Arrays.asList(superAdminRole, adminRole, managerRole, staffRole, tenantRole));
             System.out.println("✅ Created 5 roles with assigned permissions");
@@ -186,7 +186,7 @@ public class DataSeeder implements CommandLineRunner {
             Admin savedAdmin = adminRepository.save(admin);
 
             // Assign Super Admin role
-            Role superAdminRole = roleRepository.findByName("Super Admin")
+            Role superAdminRole = roleRepository.findByName("SUPER_ADMIN")
                 .orElseThrow(() -> new RuntimeException("Super Admin role not found"));
 
             UserRoleId userRoleId = new UserRoleId(savedAdmin.getId(), superAdminRole.getId());
@@ -208,9 +208,9 @@ public class DataSeeder implements CommandLineRunner {
             Admin admin = adminRepository.findByEmail("admin@pgm.com")
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
 
-            Role managerRole = roleRepository.findByName("Manager")
+            Role managerRole = roleRepository.findByName("MANAGER")
                 .orElseThrow(() -> new RuntimeException("Manager role not found"));
-            Role staffRole = roleRepository.findByName("Staff")
+            Role staffRole = roleRepository.findByName("STAFF")
                 .orElseThrow(() -> new RuntimeException("Staff role not found"));
 
             List<Staff> staffList = Arrays.asList(
@@ -230,7 +230,7 @@ public class DataSeeder implements CommandLineRunner {
         // Create user accounts for existing tenants so they can receive notifications
         if (tenantRepository.count() > 0) {
             List<Tenant> tenants = tenantRepository.findAll();
-            Role tenantRole = roleRepository.findByName("Tenant")
+            Role tenantRole = roleRepository.findByName("TENANT")
                 .orElseThrow(() -> new RuntimeException("Tenant role not found"));
 
             // Check if tenant user roles already exist

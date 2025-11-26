@@ -1,23 +1,21 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: pgm-mysql
+  postgres:
+    image: postgres:15
+    container_name: pgm-postgres
     environment:
-      MYSQL_ROOT_PASSWORD: password123
-      MYSQL_DATABASE: pgm_db
-      MYSQL_USER: pgm_user
-      MYSQL_PASSWORD: pgm_pass
+      POSTGRES_DB: pgm_db
+      POSTGRES_USER: pgm_user
+      POSTGRES_PASSWORD: pgm_pass
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - pgm-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U pgm_user -d pgm_db"]
       timeout: 20s
       retries: 10
 
@@ -27,19 +25,19 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/pgm_db?createDatabaseIfNotExist=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password123
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pgm_db
+      SPRING_DATASOURCE_USERNAME: pgm_user
+      SPRING_DATASOURCE_PASSWORD: pgm_pass
       SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
     networks:
       - pgm-network
     restart: unless-stopped
 
 volumes:
-  mysql_data:
+  postgres_data:
 
 networks:
   pgm-network:

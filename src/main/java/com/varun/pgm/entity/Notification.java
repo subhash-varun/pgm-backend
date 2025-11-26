@@ -43,7 +43,7 @@ public class Notification {
     @Column(name = "target_property_id")
     private Long targetPropertyId;
 
-    @Column(columnDefinition = "JSON")
+    @Column(columnDefinition = "TEXT")
     private String payload; // JSON string for metadata
 
     @Column(name = "is_read", nullable = false)
