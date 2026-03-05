@@ -1,5 +1,4 @@
 # PG Management System API
-
 A comprehensive REST API for managing Paying Guest (PG) accommodations with role-based access control, built with Spring Boot 3.5.6.
 
 ## 📋 Overview
