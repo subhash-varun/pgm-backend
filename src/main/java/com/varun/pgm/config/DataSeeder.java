@@ -135,7 +135,13 @@ public class DataSeeder implements CommandLineRunner {
 
                 // Notification permissions
                 createPermission("NOTIFICATION_CREATE", "Create Notification", "Permission to create and send notifications"),
-                createPermission("NOTIFICATION_READ", "Read Notification", "Permission to view and manage notifications")
+                createPermission("NOTIFICATION_READ", "Read Notification", "Permission to view and manage notifications"),
+
+                // Maintenance permissions
+                createPermission("MAINTENANCE_CREATE", "Create Maintenance", "Permission to create maintenance requests"),
+                createPermission("MAINTENANCE_READ", "Read Maintenance", "Permission to view maintenance requests"),
+                createPermission("MAINTENANCE_UPDATE", "Update Maintenance", "Permission to update maintenance requests"),
+                createPermission("MAINTENANCE_DELETE", "Delete Maintenance", "Permission to delete maintenance requests")
             );
 
             permissionRepository.saveAll(permissions);

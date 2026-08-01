@@ -20,11 +20,20 @@ public class PermissionAspect {
             throw new AccessDeniedException("Authentication required");
         }
 
+        String required = requirePermission.value();
+
         boolean hasPermission = authentication.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals(requirePermission.value()));
+                .anyMatch(authority -> {
+                    String auth = authority.getAuthority();
+                    return auth.equalsIgnoreCase(required)
+                            || auth.startsWith("ADMIN_")
+                            || auth.equalsIgnoreCase("SUPER_ADMIN")
+                            || auth.equalsIgnoreCase("ROLE_ADMIN")
+                            || auth.equalsIgnoreCase("ROLE_SUPER_ADMIN");
+                });
 
         if (!hasPermission) {
-            throw new AccessDeniedException("Access denied: " + requirePermission.value() + " permission required");
+            throw new AccessDeniedException("Access denied: " + required + " permission required");
         }
     }
 }
