@@ -23,6 +23,10 @@ public class Payment {
     @JoinColumn(name = "tenant_id")
     private Tenant tenant;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "ledger_id")
+    private RentLedger ledger;
+
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal amount;
 

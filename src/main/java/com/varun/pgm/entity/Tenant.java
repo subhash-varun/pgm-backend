@@ -47,6 +47,24 @@ public class Tenant {
     @Column(precision = 10, scale = 2)
     private BigDecimal depositAmount = BigDecimal.ZERO;
 
+    @Column(name = "advance_balance", precision = 10, scale = 2)
+    private BigDecimal advanceBalance = BigDecimal.ZERO;
+
+    @Column(name = "notice_date")
+    private LocalDate noticeDate;
+
+    @Column(name = "expected_exit_date")
+    private LocalDate expectedExitDate;
+
+    @Column(name = "actual_exit_date")
+    private LocalDate actualExitDate;
+
+    @Column(name = "exit_reason")
+    private String exitReason;
+
+    @Column(name = "bed_number", length = 50)
+    private String bedNumber;
+
     @Enumerated(EnumType.STRING)
     private TenantStatus status = TenantStatus.ACTIVE;
 
@@ -57,6 +75,6 @@ public class Tenant {
     private List<Payment> payments;
 
     public enum TenantStatus {
-        ACTIVE, MOVED_OUT
+        ACTIVE, NOTICE, MOVED_OUT
     }
 }

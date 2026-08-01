@@ -47,8 +47,13 @@ public class SecurityConfig {
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:*",
             "http://127.0.0.1:*",
+            "https://*.ngrok-free.dev",
+            "https://*.ngrok.io",
             "https://pgm-backend-latest.onrender.com",
-            "https://pgm-q869.onrender.com"
+            "https://pgm-q869.onrender.com",
+            "https://pgm-9uky2mtsr-subhashs-projects-bcab8705.vercel.app",
+            "https://pgm-web-liart.vercel.app",
+            "*"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
