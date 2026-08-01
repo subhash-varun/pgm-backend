@@ -43,6 +43,12 @@ public class Maintenance {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
+    @Column(name = "assigned_to")
+    private String assignedTo;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
     public enum MaintenanceStatus {
         PENDING, IN_PROGRESS, RESOLVED, CANCELLED
     }

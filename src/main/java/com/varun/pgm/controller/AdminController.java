@@ -68,7 +68,7 @@ public class AdminController {
         return ResponseEntity.ok(new ApiResponse<>("success", "Admins retrieved successfully", response));
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id:\\d+}")
     @Operation(summary = "Get admin by ID")
     @RequirePermission("ADMIN_READ")
     public ResponseEntity<ApiResponse<AdminResponse>> getAdminById(@PathVariable Long id) {
@@ -84,7 +84,7 @@ public class AdminController {
         return ResponseEntity.ok(new ApiResponse<>("success", "Admin retrieved successfully", response));
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id:\\d+}")
     @Operation(summary = "Update admin")
     @RequirePermission("ADMIN_UPDATE")
     public ResponseEntity<ApiResponse<AdminResponse>> updateAdmin(@PathVariable Long id, @Valid @RequestBody AdminRequest request) {
@@ -105,7 +105,7 @@ public class AdminController {
         return ResponseEntity.ok(new ApiResponse<>("success", "Admin updated successfully", response));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id:\\d+}")
     @Operation(summary = "Delete admin")
     @RequirePermission("ADMIN_DELETE")
     public ResponseEntity<ApiResponse<Void>> deleteAdmin(@PathVariable Long id) {
