@@ -15,11 +15,20 @@ public interface MaintenanceRepository extends JpaRepository<Maintenance, Long> 
 
     @Query("SELECT m FROM Maintenance m LEFT JOIN m.reportedBy t LEFT JOIN m.room r " +
            "WHERE (:status IS NULL OR m.status = :status) " +
+           "AND (:priority IS NULL OR m.priority = :priority)")
+    Page<Maintenance> findAllByStatusAndPriority(
+            @Param("status") Maintenance.MaintenanceStatus status,
+            @Param("priority") Maintenance.MaintenancePriority priority,
+            Pageable pageable
+    );
+
+    @Query("SELECT m FROM Maintenance m LEFT JOIN m.reportedBy t LEFT JOIN m.room r " +
+           "WHERE (:status IS NULL OR m.status = :status) " +
            "AND (:priority IS NULL OR m.priority = :priority) " +
-           "AND (:search IS NULL OR LOWER(m.issue) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "AND (LOWER(m.issue) LIKE LOWER(CONCAT('%', :search, '%')) " +
            "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :search, '%')) " +
            "OR LOWER(r.roomNumber) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Maintenance> searchMaintenanceRequests(
+    Page<Maintenance> searchByStatusPriorityAndTerm(
             @Param("status") Maintenance.MaintenanceStatus status,
             @Param("priority") Maintenance.MaintenancePriority priority,
             @Param("search") String search,

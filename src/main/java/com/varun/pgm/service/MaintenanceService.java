@@ -50,7 +50,12 @@ public class MaintenanceService {
 
         String searchPattern = (search != null && !search.isBlank()) ? search.trim() : null;
 
-        Page<Maintenance> page = maintenanceRepository.searchMaintenanceRequests(status, priority, searchPattern, pageable);
+        Page<Maintenance> page;
+        if (searchPattern == null) {
+            page = maintenanceRepository.findAllByStatusAndPriority(status, priority, pageable);
+        } else {
+            page = maintenanceRepository.searchByStatusPriorityAndTerm(status, priority, searchPattern, pageable);
+        }
         return page.map(this::mapToResponse);
     }
 
