@@ -53,8 +53,20 @@ public class DataSeeder implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @Override
     public void run(String... args) throws Exception {
+        try {
+            jdbcTemplate.execute("ALTER TABLE tenant DROP CONSTRAINT IF EXISTS tenant_status_check");
+            jdbcTemplate.execute("ALTER TABLE room DROP CONSTRAINT IF EXISTS room_status_check");
+            jdbcTemplate.execute("ALTER TABLE payment DROP CONSTRAINT IF EXISTS payment_status_check");
+            logger.info("Successfully dropped legacy status check constraints if present.");
+        } catch (Exception e) {
+            logger.warn("Could not drop legacy status check constraints: {}", e.getMessage());
+        }
+
         if (!dataSeedingEnabled) {
             logger.info("Data seeding is disabled. Skipping...");
             return;
